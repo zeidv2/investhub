@@ -8,10 +8,6 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Menu, X, TrendingUp } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
-/**
- * Navigation Bar Component
- * Responsive navigation with authentication state and theme toggle
- */
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { user, logout, userRole } = useAuth()
@@ -28,13 +24,13 @@ export function Navbar() {
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          {/* Logo and brand */}
+          {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <TrendingUp className="h-6 w-6 text-primary" />
             <span className="font-bold text-xl">InvestHub</span>
           </Link>
 
-          {/* Desktop navigation */}
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-foreground hover:text-primary transition-colors">
               الرئيسية
@@ -43,19 +39,22 @@ export function Navbar() {
               المشاريع
             </Link>
 
-            {/* Authenticated user navigation */}
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost">لوحة التحكم</Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <Link href={`/dashboard/${userRole}`}>لوحتي</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout}>تسجيل الخروج</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              userRole ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost">لوحة التحكم</Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/dashboard/${userRole}`}>لوحتي</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>تسجيل الخروج</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <span className="text-sm text-muted-foreground">جاري تحميل...</span>
+              )
             ) : (
               <div className="flex items-center space-x-4">
                 <Link href="/auth/login">
@@ -67,7 +66,6 @@ export function Navbar() {
               </div>
             )}
 
-            {/* Theme toggle */}
             <ThemeToggle />
           </div>
 
@@ -80,7 +78,7 @@ export function Navbar() {
           </div>
         </div>
 
-        {/* Mobile navigation menu */}
+        {/* Mobile nav */}
         {isOpen && (
           <div className="md:hidden py-4 space-y-2">
             <Link
@@ -99,7 +97,7 @@ export function Navbar() {
             </Link>
 
             {user ? (
-              <>
+              userRole ? (
                 <Link
                   href={`/dashboard/${userRole}`}
                   className="block px-4 py-2 text-foreground hover:bg-accent rounded-md"
@@ -107,16 +105,9 @@ export function Navbar() {
                 >
                   لوحة التحكم
                 </Link>
-                <button
-                  onClick={() => {
-                    handleLogout()
-                    setIsOpen(false)
-                  }}
-                  className="block w-full text-left px-4 py-2 text-foreground hover:bg-accent rounded-md"
-                >
-                  تسجيل الخروج
-                </button>
-              </>
+              ) : (
+                <div className="block px-4 py-2 text-muted-foreground">جاري تحميل...</div>
+              )
             ) : (
               <>
                 <Link

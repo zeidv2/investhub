@@ -12,6 +12,8 @@ export function useAuth() {
   const [userRole, setUserRole] = useState<"investor" | "owner" | null>(null)
 
   useEffect(() => {
+    console.log("Current user in useAuth:", user);
+
     const fetchUserRole = async () => {
       if (user && typeof window !== "undefined") {
         try {
@@ -22,11 +24,17 @@ export function useAuth() {
           if (db) {
             const userDoc = await getDoc(doc(db, "users", user.uid))
             if (userDoc.exists()) {
-              setUserRole(userDoc.data().role)
+              const fetchedRole = userDoc.data().role
+              console.log("Fetched user role:", fetchedRole)
+              setUserRole(fetchedRole)
+            } else {
+              console.warn("User document does not exist in Firestore")
+              setUserRole(null)
             }
           }
         } catch (error) {
           console.error("Error fetching user role:", error)
+          setUserRole(null)
         }
       } else {
         setUserRole(null)
@@ -48,12 +56,12 @@ export function useAuth() {
       const auth = await getFirebaseAuth()
       if (!auth) throw new Error("Auth service not available")
 
-      
       if (!auth.app || !auth.app.options) {
         throw new Error("Firebase app not initialized correctly")
       }
 
       const result = await signInWithEmailAndPassword(auth, email, password)
+      console.log("Login successful, user:", result.user)
       return result.user
     } catch (error) {
       console.error("Error during login:", error)
@@ -81,16 +89,22 @@ export function useAuth() {
 
       await updateProfile(user, { displayName })
 
-      await setDoc(doc(db, "users", user.uid), {
-        email: user.email,
-        displayName,
-        role,
-        createdAt: new Date().toISOString(),
-      })
+      try {
+        await setDoc(doc(db, "users", user.uid), {
+          email: user.email,
+          displayName,
+          role,
+          createdAt: new Date().toISOString(),
+        })
+        console.log("User document added successfully in Firestore!")
+      } catch (error) {
+        console.error("Error saving user document to Firestore:", error)
+        throw error
+      }
 
       setUserRole(role)
 
-      // أضف redirect بعد نجاح التسجيل
+      // بعد التسجيل الناجح وجه المستخدم للصفحة الرئيسية
       window.location.href = "/"
 
       return user
@@ -114,7 +128,9 @@ export function useAuth() {
 
       await signOut(auth)
       setUserRole(null)
+      console.log("User logged out successfully")
     } catch (error) {
+      console.error("Error during logout:", error)
       throw error
     }
   }

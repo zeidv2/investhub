@@ -10,10 +10,6 @@ interface ProtectedRouteProps {
   requiredRole?: "investor" | "owner"
 }
 
-/**
- * Protected Route Component
- * Ensures user is authenticated and has the required role
- */
 export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
   const { user, userRole, loading } = useAuth()
   const router = useRouter()
@@ -25,14 +21,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
         return
       }
 
-      if (requiredRole && userRole !== requiredRole) {
+      // هنا بنضيف شرط إن لو لسه userRole undefined ما نعملش redirect
+      if (requiredRole && userRole && userRole !== requiredRole) {
         router.push("/")
         return
       }
     }
   }, [user, userRole, loading, requiredRole, router])
 
-  if (loading) {
+  if (loading || (user && requiredRole && !userRole)) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-primary"></div>
