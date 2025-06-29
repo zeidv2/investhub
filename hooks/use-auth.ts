@@ -48,9 +48,15 @@ export function useAuth() {
       const auth = await getFirebaseAuth()
       if (!auth) throw new Error("Auth service not available")
 
+      
+      if (!auth.app || !auth.app.options) {
+        throw new Error("Firebase app not initialized correctly")
+      }
+
       const result = await signInWithEmailAndPassword(auth, email, password)
       return result.user
     } catch (error) {
+      console.error("Error during login:", error)
       throw error
     }
   }
@@ -83,8 +89,13 @@ export function useAuth() {
       })
 
       setUserRole(role)
+
+      // أضف redirect بعد نجاح التسجيل
+      window.location.href = "/"
+
       return user
     } catch (error) {
+      console.error("Error during signup:", error)
       throw error
     }
   }
